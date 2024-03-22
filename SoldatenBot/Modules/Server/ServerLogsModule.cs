@@ -111,15 +111,25 @@ namespace SoldatenBot.Modules.Server
 
         public static async Task OnUserUnbanned(SocketUser user, SocketGuild guild)
         {
-            var embed = new EmbedBuilder()
-                .WithColor(Color.Green)
-                .WithAuthor("Espia de Roier Des-Culeado")
-                .WithDescription("**Espia de Roier:** " + user.Mention + "\n**ID:** " + user.Id +
-                                 "\n**Fecha de Des-Culeo:** " +
-                                 DateTime.Now.ToString("dd/MM/yyyy"))
-                .WithFooter(EmbedUtils.Footer)
-                .WithCurrentTimestamp()
-                .Build();
+            try
+            {
+                var embed = new EmbedBuilder()
+                    .WithColor(Color.Green)
+                    .WithAuthor("Espia de Roier Des-Culeado")
+                    .WithDescription("**Espia de Roier:** " + user.Mention + "\n**ID:** " + user.Id +
+                                     "\n**Fecha de Des-Culeo:** " +
+                                     DateTime.Now.ToString("dd/MM/yyyy"))
+                    .WithFooter(EmbedUtils.Footer)
+                    .WithCurrentTimestamp()
+                    .Build();
+            
+                var logChannel = Program.Instance.CurrentGuild.GetTextChannel(1208902093193351268);
+                await logChannel.SendMessageAsync(embed: embed);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
     }
 }

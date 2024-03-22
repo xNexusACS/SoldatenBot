@@ -25,75 +25,78 @@ namespace SoldatenBot.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
-        public static void AddData(ulong userId, int xp, int level)
+        public static async Task AddData(ulong userId, int xp, int level)
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "INSERT INTO Levels(UserId, Xp, Level) VALUES(@userId, @xp, @level)";
             cmd.Parameters.AddWithValue("@userId", userId);
             cmd.Parameters.AddWithValue("@xp", xp);
             cmd.Parameters.AddWithValue("@level", level);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
         
-        public static bool ExistInDatabase(ulong userId)
+        public static async Task<bool> ExistInDatabase(ulong userId)
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT * FROM Levels WHERE UserId = @userId";
             cmd.Parameters.AddWithValue("@userId", userId);
-            return cmd.ExecuteScalar() != null;
+            var result = await cmd.ExecuteScalarAsync();
+            return result != null;
         }
         
-        public static void DeleteData(ulong userId)
+        public static async Task DeleteData(ulong userId)
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "DELETE FROM Levels WHERE UserId = @userId";
             cmd.Parameters.AddWithValue("@userId", userId);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
         
-        public static int GetLevel(ulong userId)
+        public static async Task<int> GetLevel(ulong userId)
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT Level FROM Levels WHERE UserId = @userId";
             cmd.Parameters.AddWithValue("@userId", userId);
             
-            return Convert.ToInt32(cmd.ExecuteScalar());
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result);
         }
         
-        public static int GetXp(ulong userId)
+        public static async Task<int> GetXp(ulong userId)
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT Xp FROM Levels WHERE UserId = @userId";
             cmd.Parameters.AddWithValue("@userId", userId);
-            
-            return Convert.ToInt32(cmd.ExecuteScalar());
+
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result);
         }
         
-        public static List<SocketUser> GetTopLevels()
+        public static async Task<List<SocketUser>> GetTopLevels()
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
             
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             
             cmd.CommandText = "SELECT * FROM Levels ORDER BY Level DESC LIMIT 10";
             
-            using var reader = cmd.ExecuteReader();
+            await using var reader = await cmd.ExecuteReaderAsync();
             
             var users = new List<SocketUser>();
             
@@ -107,42 +110,42 @@ namespace SoldatenBot.Services
             return users;
         }
         
-        public static void AddXp(ulong userId, int value = 10)
+        public static async Task AddXp(ulong userId, int value = 10)
         {
-            var currentLevel = GetLevel(userId);
+            var currentLevel = await GetLevel(userId);
             var xpLimit = currentLevel < 10 ? 1000 : 2000;
 
-            if (GetXp(userId) >= xpLimit)
+            if (await GetXp(userId) >= xpLimit)
             {
-                LevelUp(userId);
+                await LevelUp(userId);
                 return;
             }
             
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "UPDATE Levels SET Xp = Xp + @value WHERE UserId = @userId";
             cmd.Parameters.AddWithValue("@userId", userId);
             cmd.Parameters.AddWithValue("@value", value);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
         
-        private static void LevelUp(ulong userId)
+        private static async Task LevelUp(ulong userId)
         {
-            using SqliteConnection conn = new(ConnectionString);
-            conn.Open();
+            await using SqliteConnection conn = new(ConnectionString);
+            await conn.OpenAsync();
 
-            using var cmd = conn.CreateCommand();
+            await using var cmd = conn.CreateCommand();
             cmd.CommandText = "UPDATE Levels SET Level = Level + 1 WHERE UserId = @userId";
             cmd.Parameters.AddWithValue("@userId", userId);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
             
             var levelChannel = Program.Instance.CurrentGuild.GetTextChannel(1209898835908759592);
-            levelChannel.SendMessageAsync($"¡Felicidades culero <@{userId}>, has subido de nivel de culeo a {GetLevel(userId)}!");
+            await levelChannel.SendMessageAsync($"¡Felicidades culero <@{userId}>, has subido de nivel de culeo a {await GetLevel(userId)}!");
             
             cmd.CommandText = "UPDATE Levels SET Xp = 0 WHERE UserId = @userId";
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 }

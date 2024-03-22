@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using SkiaSharp;
@@ -20,7 +21,7 @@ namespace SoldatenBot.Modules.Commands
         {
             var user = socketUser ?? Context.User;
             
-            if (!DatabaseService.ExistInDatabase(user.Id))
+            if (!await DatabaseService.ExistInDatabase(user.Id))
             {
                 await RespondAsync("No tienes nivel, te falta calle", ephemeral: true);
                 return;
@@ -52,14 +53,14 @@ namespace SoldatenBot.Modules.Commands
                 return;
             }
 
-            if (!DatabaseService.ExistInDatabase(guildUser.Id))
+            if (!await DatabaseService.ExistInDatabase(guildUser.Id))
             {
-                DatabaseService.AddData(guildUser.Id, amount, 1);
+                await DatabaseService.AddData(guildUser.Id, amount, 1);
                 await RespondAsync($"Se han dado {amount} XP a {guildUser.Mention}", ephemeral: true);
                 return;
             }
             
-            DatabaseService.AddXp(guildUser.Id, amount);
+            await DatabaseService.AddXp(guildUser.Id, amount);
             await RespondAsync($"Se han dado {amount} XP a {guildUser.Mention}", ephemeral: true);
         }
         
@@ -68,7 +69,7 @@ namespace SoldatenBot.Modules.Commands
             return user.Roles.Any(x => x.Id == 1158787534428569760);
         }
         
-        private Task<Stream> CreateUserLevelImage(SocketUser user)
+        private async Task<Stream> CreateUserLevelImage(IUser user)
         {
             const int width = 400;
             const int height = 150;
@@ -106,23 +107,23 @@ namespace SoldatenBot.Modules.Commands
             var underlineEndPoint = new SKPoint(130 + paint.MeasureText(user.Username), 65);
             canvas.DrawLine(underlineStartPoint, underlineEndPoint, underlinePaint);
 
-            var level = DatabaseService.GetLevel(user.Id);
-            var xp = DatabaseService.GetXp(user.Id);
+            var level = await DatabaseService.GetLevel(user.Id);
+            var xp = await DatabaseService.GetXp(user.Id);
 
             var levelPoint = new SKPoint(130, 90);
             canvas.DrawText($"Nivel: {level}", levelPoint, paint);
 
             var xpPoint = new SKPoint(130, 120);
-            canvas.DrawText($"XP: {xp} / {(level > 10 ? "1000" : "2000")}", xpPoint, paint);
+            canvas.DrawText($"XP: {xp} / {(level < 10 ? "1000" : "2000")}", xpPoint, paint);
 
             using var image = SKImage.FromBitmap(bitmap);
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-            return Task.FromResult<Stream>(new MemoryStream(data.ToArray()));
+            return new MemoryStream(data.ToArray());
         }
 
         private async Task GenerateLeaderboard()
         {
-            var users = DatabaseService.GetTopLevels();
+            var users = await DatabaseService.GetTopLevels();
             
             const int width = 500;
             var height = users.Count * 60 + 60;
@@ -160,7 +161,7 @@ namespace SoldatenBot.Modules.Commands
                 
                 if (i > 0 && users[i].Id == users[i - 1].Id) continue;
 
-                var text = $"{users[i].Username} - Nivel {DatabaseService.GetLevel(users[i].Id)} - XP {DatabaseService.GetXp(users[i].Id)}";
+                var text = $"{users[i].Username} - Nivel {await DatabaseService.GetLevel(users[i].Id)} - XP {await DatabaseService.GetXp(users[i].Id)}";
 
                 var paintToUse = i switch
                 {

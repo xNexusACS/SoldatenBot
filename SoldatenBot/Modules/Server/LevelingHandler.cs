@@ -15,12 +15,12 @@ namespace SoldatenBot.Modules.Server
 
                 if (message.Author is not SocketGuildUser user) return;
                 
-                if (DatabaseService.ExistInDatabase(user.Id))
+                if (await DatabaseService.ExistInDatabase(user.Id))
                 {
-                    DatabaseService.AddXp(user.Id);
+                    await DatabaseService.AddXp(user.Id);
                     return;
                 }
-                DatabaseService.AddData(user.Id, 0, 1);
+                await DatabaseService.AddData(user.Id, 0, 1);
             }
             catch(Exception e)
             {
@@ -32,7 +32,7 @@ namespace SoldatenBot.Modules.Server
         {
             try
             {
-                DatabaseService.DeleteData(user.Id);
+                await DatabaseService.DeleteData(user.Id);
             }
             catch(Exception e)
             {
@@ -44,9 +44,9 @@ namespace SoldatenBot.Modules.Server
         {
             try
             {
-                if (DatabaseService.ExistInDatabase(user.Id)) return;
+                if (await DatabaseService.ExistInDatabase(user.Id)) return;
                 
-                DatabaseService.AddData(user.Id, 0, 1);
+                await DatabaseService.AddData(user.Id, 0, 1);
             }
             catch(Exception e)
             {
