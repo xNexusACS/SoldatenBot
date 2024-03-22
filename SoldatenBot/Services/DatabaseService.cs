@@ -16,11 +16,21 @@ namespace SoldatenBot.Services
             if (File.Exists(Program.Instance.DatabaseFile)) return;
             
             File.Create(Program.Instance.DatabaseFile);
-                
-            await using SqliteConnection conn = new(ConnectionString);
-            await conn.OpenAsync();
 
-            await using var cmd = conn.CreateCommand();
+            SqliteConnection conn = null;
+            try
+            {
+                conn = new SqliteConnection(ConnectionString);
+                await conn.OpenAsync();
+            }
+            catch (SqliteException e)
+            {
+                if (e.SqliteErrorCode is not 14) return;
+                
+                Console.WriteLine($"Unable to open database. Connection string: {ConnectionString}");
+            }
+
+            await using var cmd = conn!.CreateCommand();
             cmd.CommandText = "CREATE TABLE IF NOT EXISTS Levels(UserId INTEGER, Xp INTEGER, Level INTEGER)";
             await cmd.ExecuteNonQueryAsync();
         }
@@ -113,7 +123,7 @@ namespace SoldatenBot.Services
         public static async Task AddXp(ulong userId, int value = 10)
         {
             var currentLevel = await GetLevel(userId);
-            var xpLimit = currentLevel < 10 ? 1000 : 2000;
+            var xpLimit = currentLevel < 10 ? 1000 : currentLevel >= 20 ? 3000 : 2000;
 
             if (await GetXp(userId) >= xpLimit)
             {

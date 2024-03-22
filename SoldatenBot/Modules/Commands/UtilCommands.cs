@@ -40,7 +40,7 @@ namespace SoldatenBot.Modules.Commands
                 }
             }
             if (userAvatar == null)
-                await RespondAsync("Error al obtener el avatar del usuario especificado \n" +
+                await RespondAsync("Error al obtener el avatar del usuario especificado\n" +
                                    "Asegurate de que el usuario tenga un avatar");
 
             replyEmbed.WithImageUrl(userAvatar);

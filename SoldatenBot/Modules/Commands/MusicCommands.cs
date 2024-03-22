@@ -6,6 +6,8 @@ using Lavalink4NET;
 using Lavalink4NET.Player;
 using Lavalink4NET.Rest;
 
+// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
+
 namespace SoldatenBot.Modules.Commands
 {
     [Group("musica", "Comandos de musica")]
@@ -148,8 +150,8 @@ namespace SoldatenBot.Modules.Commands
 
             if (audioPlayer.CurrentTrack is null)
             {
-                embed.WithAuthor("❌ Music: Error")
-                    .WithTitle("The queue is empty");
+                embed.WithAuthor("❌ Musica: Error")
+                    .WithTitle("La queue esta vacia");
 
                 await RespondAsync(embed: embed.Build());
                 return;
@@ -158,7 +160,7 @@ namespace SoldatenBot.Modules.Commands
             embed.WithTitle("Queue")
                 .AddField($"Reproduciendo: {audioPlayer.CurrentTrack!.Title}", $"{audioPlayer.CurrentTrack.Author} - {audioPlayer.CurrentTrack.Duration}");
 
-            int pos = 1;
+            var pos = 1;
             foreach (var vibe in audioPlayer.Queue)
                 embed.AddField($"[{pos++}]. {vibe.Title}", $"{vibe.Author} - {vibe.Duration}");
 
