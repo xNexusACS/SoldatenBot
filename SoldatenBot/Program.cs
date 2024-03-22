@@ -111,7 +111,7 @@ namespace SoldatenBot
                  
                  await _client.SetStatusAsync(UserStatus.Online);
                  
-                DatabaseService.OpenDatabase();
+                 await DatabaseService.OpenDatabase();
              
                  Console.WriteLine($"Conectado como => {_client.CurrentUser.Username}");
                  await commands.RegisterCommandsToGuildAsync(ulong.Parse(config["guild"]));
