@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.Data.Sqlite;
 
@@ -11,21 +10,18 @@ namespace SoldatenBot.Services
     {
         private static readonly string ConnectionString = $"Data Source={Program.Instance.DatabaseFile}";
 
-        public static async Task OpenDatabase()
+        public static void OpenDatabase()
         {
-            if (!File.Exists(Program.Instance.DatabaseFile))
-            {
-                File.Create(Program.Instance.DatabaseFile);
+            if (File.Exists(Program.Instance.DatabaseFile)) return;
+            
+            File.Create(Program.Instance.DatabaseFile);
                 
-                using SqliteConnection conn = new(ConnectionString);
-                conn.Open();
+            using SqliteConnection conn = new(ConnectionString);
+            conn.Open();
 
-                using (var cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = "CREATE TABLE IF NOT EXISTS Levels(UserId INTEGER, Xp INTEGER, Level INTEGER)";
-                    cmd.ExecuteNonQuery();
-                }
-            }
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "CREATE TABLE IF NOT EXISTS Levels(UserId INTEGER, Xp INTEGER, Level INTEGER)";
+            cmd.ExecuteNonQuery();
         }
 
         public static void AddData(ulong userId, int xp, int level)
