@@ -68,7 +68,7 @@ namespace SoldatenBot.Modules.Commands
             return user.Roles.Any(x => x.Id == 1158787534428569760);
         }
         
-        private async Task<Stream> CreateUserLevelImage(SocketUser user)
+        private Task<Stream> CreateUserLevelImage(SocketUser user)
         {
             const int width = 400;
             const int height = 150;
@@ -117,7 +117,7 @@ namespace SoldatenBot.Modules.Commands
 
             using var image = SKImage.FromBitmap(bitmap);
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-            return new MemoryStream(data.ToArray());
+            return Task.FromResult<Stream>(new MemoryStream(data.ToArray()));
         }
 
         private async Task GenerateLeaderboard()
