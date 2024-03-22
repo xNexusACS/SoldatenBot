@@ -64,8 +64,7 @@ namespace SoldatenBot.Modules.Interactions
             .WithSelectMenu(SelectMenuOptions2);
 
         internal static MessageComponent MessageComponent { get; } = new ComponentBuilder()
-            .AddRow(ActionRow)
-            .AddRow(ActionRow2)
+            .WithRows(new [] {ActionRow, ActionRow2})
             .Build();
 
         internal static async Task HandleSelectMenu(SocketMessageComponent component)
