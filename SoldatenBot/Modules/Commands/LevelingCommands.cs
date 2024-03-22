@@ -113,7 +113,7 @@ namespace SoldatenBot.Modules.Commands
             canvas.DrawText($"Nivel: {level}", levelPoint, paint);
 
             var xpPoint = new SKPoint(130, 120);
-            canvas.DrawText($"XP: {xp} / 1000", xpPoint, paint);
+            canvas.DrawText($"XP: {xp} / {(level > 10 ? 1000 : 2000)}", xpPoint, paint);
 
             using var image = SKImage.FromBitmap(bitmap);
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
